@@ -55,8 +55,8 @@ def UDP_Server():
 
             mL = StrToInt/1000
      
-            max.maXcount = mL/2.25
-
+            max.maXcount = mL/2.25 # This is the amount of times we have to read a pulse (each represents 2.25 ml) from
+                                   # Meter to dispense the volume wanted 
             sem.release()
      
       
