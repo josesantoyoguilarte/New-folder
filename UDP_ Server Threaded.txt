@@ -1,0 +1,108 @@
+#Jose A Santoyo Part
+#Server UDP socket server
+import threading
+import os
+import socket
+import sys
+import time
+
+
+sem = threading.Semaphore()
+class max:
+      maXcount = 0.0
+class counter:
+      count = 1.0
+
+def UDP_Server():
+
+     HOST = ''  # Symbolic name meaning all available interfaces
+     PORT = 42000 # Arbitrary non-privileged port
+
+#Datagram (UDP) socket
+#This creates a socket from which comunication will happen
+
+     try :
+          s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+          print ('Socket has been created')
+          
+     except socket.error:
+          print ('Failed to create socket. Error Code : ' + str(msg[0])+ 'Message')
+          sys.exit()
+#Bind socket to local host and port
+#
+     try :
+          s.bind((HOST, PORT))
+#Now this Host can comunicate through the socket that has been binded to it
+          print ('Socket has been binded to', PORT)
+     except socket.error:
+           print ('Failed to create socket. Error Code : ' + str(msg[0])+ 'Message')
+           sys.exit()
+#Now we keep talking with Client
+#................................................
+
+  
+     while 1:
+    # receive data from Client(data,address)
+            data, adrr = s.recvfrom(1024)
+    
+#Take data and Control Valve and Meter Accordingly
+
+      #Converting data to float
+            StrToInt = float(data)#This StrToInt is now in L
+
+     #convert int to ml because each pulse we are reading from meter represents 2.25 ml
+            sem.acquire() 
+
+            mL = StrToInt/1000
+     
+            max.maXcount = mL/2.25
+
+            sem.release()
+     
+      
+            if data=='exit':
+              reply = 'exit'
+              s.sendto(reply, adrr)
+              print ('Client['+ str(adrr)  + '] has terminated')
+            else:
+              reply = 'Ack'
+              s.sendto(reply, adrr)
+     
+              print ('Message[' + data + ':' + str(adrr)  + ']')
+
+
+            s.close()
+
+
+
+def getPulses():
+
+    
+    while True:
+          
+          sem.acquire()
+          if counter.count <= max.maXcount:  #maXcount has to be at least = 1
+             print('Reading Pulses')         #else keeps waiting for input from Client
+             time.sleep(0.25)                # to count
+             counter.count = counter.count + 1
+          else:
+              
+             # print('Still waiting') 
+              max.maXcount = 0.0  #reset maXcount 
+          sem.release()
+    
+
+t1 = threading.Thread(target = UDP_Server)
+t1.start()
+
+t2 = threading.Thread(target = getPulses)
+t2.start()
+
+#End of Jose A Santoyo Part
+
+
+
+
+
+
+     
